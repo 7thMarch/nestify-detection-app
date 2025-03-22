@@ -1,7 +1,7 @@
 
 import axios from "axios";
 import { NestDetectionResponse, NestDetectionResult } from "../types";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 // API Key - In a production app, this would ideally be stored securely
 const API_KEY = "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";

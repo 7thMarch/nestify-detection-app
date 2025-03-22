@@ -6,7 +6,7 @@ import ResultDisplay from "@/components/ResultDisplay";
 import Footer from "@/components/Footer";
 import { UploadedImage, NestDetectionResult } from "@/types";
 import { detectNest } from "@/services/nestDetectionService";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { ChevronDown } from "lucide-react";
 
 const Index = () => {
