@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 import { UploadedImage, NestDetectionResult } from "@/types";
 import { detectNestFromFile, detectNestFromUrl } from "@/services/nestDetectionService";
 import { toast } from "sonner";
-import { ChevronDown } from "lucide-react";
+import { Info, Camera, Link } from "lucide-react";
 
 const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
@@ -23,18 +23,18 @@ const Index = () => {
     setIsAnalyzing(true);
     
     try {
-      toast.info("Uploading and analyzing image...");
+      toast.info("正在上传并分析图片...");
       const detectionResult = await detectNestFromFile(image.file);
       setResult(detectionResult);
       
       toast.success(
         detectionResult.found
-          ? "Bird nest detected successfully!"
-          : "Analysis complete. No bird nest found."
+          ? "成功检测到鸟巢！"
+          : "分析完成，未发现鸟巢。"
       );
     } catch (error) {
-      console.error("Error processing image:", error);
-      toast.error("Failed to analyze image. Please try again.");
+      console.error("处理图片时出错:", error);
+      toast.error("图片分析失败，请重试。");
     } finally {
       setIsAnalyzing(false);
     }
@@ -52,18 +52,18 @@ const Index = () => {
     setIsAnalyzing(true);
     
     try {
-      toast.info("Analyzing image from URL...");
+      toast.info("正在分析URL图片...");
       const detectionResult = await detectNestFromUrl(url);
       setResult(detectionResult);
       
       toast.success(
         detectionResult.found
-          ? "Bird nest detected successfully!"
-          : "Analysis complete. No bird nest found."
+          ? "成功检测到鸟巢！"
+          : "分析完成，未发现鸟巢。"
       );
     } catch (error) {
-      console.error("Error processing image URL:", error);
-      toast.error("Failed to analyze image. Please try again.");
+      console.error("处理图片URL时出错:", error);
+      toast.error("图片分析失败，请重试。");
     } finally {
       setIsAnalyzing(false);
     }
@@ -84,22 +84,21 @@ const Index = () => {
   const displayImageUrl = uploadedImage?.preview || analysisImageUrl;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-background/90">
       <Header />
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        {/* Hero Section */}
+        {/* 主页部分 */}
         <section className="py-16 md:py-24">
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4 animate-fade-in">
-              Advanced AI-Powered Technology
+              人工智能驱动技术
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-semibold tracking-tight mb-6 animate-slide-up">
-              Bird Nest <span className="text-primary">Detection</span>
+              鸟巢<span className="text-primary">检测</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8 animate-slide-up" style={{ animationDelay: "100ms" }}>
-              Upload an image or provide a URL and our AI will instantly detect if there's a bird nest
-              present and pinpoint its exact location with precision.
+              上传图片或提供URL，我们的AI将立即检测图像中是否存在鸟巢并精确定位其位置。
             </p>
             
             <div className="flex flex-col items-center animate-slide-up" style={{ animationDelay: "200ms" }}>
@@ -107,40 +106,85 @@ const Index = () => {
                 href="#upload-section" 
                 className="inline-block rounded-full bg-primary text-white font-medium px-6 py-3 hover:bg-primary/90 transition-colors"
               >
-                Try It Now
-              </a>
-              <a 
-                href="#how-it-works" 
-                className="inline-flex items-center text-sm mt-4 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Learn how it works
-                <ChevronDown className="ml-1 h-4 w-4" />
+                立即体验
               </a>
             </div>
           </div>
         </section>
         
-        {/* Upload Section */}
+        {/* 上传部分 */}
         <section id="upload-section" className="py-8 md:py-16">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-10">
               <h2 className="text-2xl md:text-3xl font-display font-semibold mb-3">
-                Analyze an Image
+                分析图片
               </h2>
               <p className="text-muted-foreground">
-                Upload an image, paste a URL, or drag and drop to detect bird nests
+                上传图片或粘贴URL来检测鸟巢
               </p>
             </div>
             
-            <ImageUpload 
-              onImageUpload={handleImageUpload} 
-              isLoading={isAnalyzing} 
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="glass-card rounded-2xl p-6 transition-all duration-300 hover:shadow-lg">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-primary/10">
+                    <Camera className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="ml-3 text-xl font-display font-medium">上传图片</h3>
+                </div>
+                <p className="text-muted-foreground mb-6 text-sm">
+                  您可以上传本地图片或直接拖放图片到上传区域
+                </p>
+                <ImageUpload 
+                  onImageUpload={handleImageUpload} 
+                  isLoading={isAnalyzing} 
+                />
+              </div>
+              
+              <div className="glass-card rounded-2xl p-6 transition-all duration-300 hover:shadow-lg">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-primary/10">
+                    <Link className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="ml-3 text-xl font-display font-medium">图片URL</h3>
+                </div>
+                <p className="text-muted-foreground mb-6 text-sm">
+                  输入网络图片的URL地址进行分析
+                </p>
+                <UrlInput
+                  onUrlSubmit={handleUrlSubmit}
+                  isLoading={isAnalyzing}
+                />
+              </div>
+            </div>
             
-            <UrlInput
-              onUrlSubmit={handleUrlSubmit}
-              isLoading={isAnalyzing}
-            />
+            {/* 使用说明与注意事项 */}
+            <div className="glass-card rounded-2xl p-6 mb-8">
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary/10">
+                  <Info className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="ml-3 text-lg font-display font-medium">使用说明与注意事项</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start">
+                  <span className="inline-block w-4 h-4 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center mr-2 mt-0.5">1</span>
+                  <span>支持上传JPG、PNG和GIF格式的图片，最大文件大小为10MB</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-block w-4 h-4 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center mr-2 mt-0.5">2</span>
+                  <span>为获得最佳分析效果，请上传清晰且鸟巢区域可见的图片</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-block w-4 h-4 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center mr-2 mt-0.5">3</span>
+                  <span>分析过程可能需要几秒钟，请耐心等待</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-block w-4 h-4 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center mr-2 mt-0.5">4</span>
+                  <span>如果检测结果不准确，可尝试不同角度的图片或更高质量的图像</span>
+                </li>
+              </ul>
+            </div>
             
             <ResultDisplay 
               result={result} 
@@ -148,51 +192,6 @@ const Index = () => {
               isLoading={isAnalyzing}
               onReset={handleReset}
             />
-          </div>
-        </section>
-        
-        {/* How It Works Section */}
-        <section id="how-it-works" className="py-16">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-2xl md:text-3xl font-display font-semibold mb-3">
-                How It Works
-              </h2>
-              <p className="text-muted-foreground">
-                Our advanced AI system analyzes your images in three simple steps
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                {
-                  step: "1",
-                  title: "Upload or Paste URL",
-                  description: "Upload any image or provide a URL containing potential bird nests for analysis."
-                },
-                {
-                  step: "2",
-                  title: "Analyze",
-                  description: "Our AI examines the image for patterns consistent with bird nests."
-                },
-                {
-                  step: "3",
-                  title: "Results",
-                  description: "Get instant results with precise nest locations or detailed descriptions."
-                }
-              ].map((item, index) => (
-                <div 
-                  key={index} 
-                  className="relative bg-card rounded-2xl p-6 shadow-sm border transition-all duration-300 hover:shadow-md"
-                >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium mb-4">
-                    {item.step}
-                  </div>
-                  <h3 className="text-lg font-display font-medium mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground text-sm">{item.description}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
       </main>
