@@ -20,6 +20,7 @@ const ResultDisplay = ({
   onReset,
 }: ResultDisplayProps) => {
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [imageError, setImageError] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [animateIn, setAnimateIn] = useState(false);
@@ -37,6 +38,9 @@ const ResultDisplay = ({
   }, [result, isLoading]);
 
   useEffect(() => {
+    // Reset error state when imageUrl changes
+    setImageError(false);
+    
     const updateImageSize = () => {
       if (imageRef.current) {
         setImageSize({
@@ -54,30 +58,48 @@ const ResultDisplay = ({
     }
   }, [imageUrl]);
 
-  if (!imageUrl) return null;
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  if (!imageUrl && !isLoading) return null;
 
   return (
     <div 
       ref={containerRef}
       className={cn(
-        "w-full transition-all duration-500 transform",
+        "w-full transition-all duration-500 transform mt-8",
         animateIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
       )}
     >
       <div className="rounded-2xl border overflow-hidden bg-card shadow-sm mb-6">
         <div className="relative">
           <div className="aspect-video overflow-hidden bg-black/5">
-            <img
-              ref={imageRef}
-              src={imageUrl}
-              alt="Uploaded image"
-              className="object-contain w-full h-full"
-            />
-            {result && result.found && result.position && (
-              <BoundingBox
-                position={result.position}
-                imageSize={imageSize}
-              />
+            {imageUrl && !imageError ? (
+              <>
+                <img
+                  ref={imageRef}
+                  src={imageUrl}
+                  alt="Analyzed image"
+                  className="object-contain w-full h-full"
+                  onError={handleImageError}
+                />
+                {result && result.found && result.position && (
+                  <BoundingBox
+                    position={result.position}
+                    imageSize={imageSize}
+                  />
+                )}
+              </>
+            ) : imageError ? (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <XCircle className="h-8 w-8 mb-2" />
+                <p>Failed to load image</p>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="h-8 w-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin"></div>
+              </div>
             )}
           </div>
         </div>

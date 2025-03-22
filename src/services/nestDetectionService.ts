@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import { NestDetectionResponse, NestDetectionResult } from "../types";
 import { toast } from "sonner";
@@ -6,11 +5,54 @@ import { toast } from "sonner";
 // API Key - In a production app, this would ideally be stored securely
 const API_KEY = "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";
 
-export const detectNest = async (imageFile: File): Promise<NestDetectionResult> => {
+// Image hosting service endpoint
+const UPLOAD_API_URL = "https://api.imgbb.com/1/upload";
+const IMGBB_API_KEY = "b9a79e2e83e4f47ca668462ad2a96396"; // Public API key for ImgBB
+
+// Upload image to hosting service and get a URL
+export const uploadImageToHosting = async (imageFile: File): Promise<string> => {
   try {
-    // Convert image to base64
-    const base64Image = await fileToBase64(imageFile);
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    formData.append("key", IMGBB_API_KEY);
+
+    const response = await axios.post(UPLOAD_API_URL, formData);
     
+    if (response.data.success) {
+      return response.data.data.url;
+    } else {
+      throw new Error("Failed to upload image");
+    }
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    toast.error("Failed to upload image. Please try again.");
+    throw error;
+  }
+};
+
+// Detect nest from an image file by first uploading it
+export const detectNestFromFile = async (imageFile: File): Promise<NestDetectionResult> => {
+  try {
+    // Upload to image hosting first
+    const imageUrl = await uploadImageToHosting(imageFile);
+    
+    // Now detect nest using the URL
+    return await detectNestFromUrl(imageUrl);
+  } catch (error) {
+    console.error('Error detecting bird nest from file:', error);
+    toast.error('Failed to analyze image. Please try again.');
+    
+    // Return a default response
+    return {
+      found: false,
+      description: 'Unable to analyze the image. Please try again.'
+    };
+  }
+};
+
+// Detect nest directly from a URL
+export const detectNestFromUrl = async (imageUrl: string): Promise<NestDetectionResult> => {
+  try {
     const options = {
       method: 'POST',
       url: 'https://openrouter.ai/api/v1/chat/completions',
@@ -34,7 +76,7 @@ export const detectNest = async (imageFile: File): Promise<NestDetectionResult> 
               },
               {
                 type: 'image_url',
-                image_url: {url: base64Image}
+                image_url: {url: imageUrl}
               }
             ]
           }
@@ -46,11 +88,12 @@ export const detectNest = async (imageFile: File): Promise<NestDetectionResult> 
     
     // Parse the JSON response from the AI
     const content = response.data.choices[0]?.message?.content || '';
+    console.log("AI response:", content);
     const result = JSON.parse(content) as NestDetectionResult;
     
     return result;
   } catch (error) {
-    console.error('Error detecting bird nest:', error);
+    console.error('Error detecting bird nest from URL:', error);
     toast.error('Failed to analyze image. Please try again.');
     
     // Return a default response
@@ -61,7 +104,10 @@ export const detectNest = async (imageFile: File): Promise<NestDetectionResult> 
   }
 };
 
-// Helper function to convert File to base64
+// Original function for backward compatibility
+export const detectNest = detectNestFromFile;
+
+// Helper function to convert File to base64 (keeping for reference)
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

@@ -72,6 +72,33 @@ const ImageUpload = ({ onImageUpload, isLoading }: ImageUploadProps) => {
     fileInputRef.current?.click();
   };
 
+  // Add clipboard paste support
+  const handlePaste = useCallback(
+    (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            processFile(file);
+            break;
+          }
+        }
+      }
+    },
+    [onImageUpload]
+  );
+
+  // Add and remove paste event listener
+  useEffect(() => {
+    document.addEventListener("paste", handlePaste);
+    return () => {
+      document.removeEventListener("paste", handlePaste);
+    };
+  }, [handlePaste]);
+
   return (
     <div className="w-full">
       <div
@@ -117,7 +144,7 @@ const ImageUpload = ({ onImageUpload, isLoading }: ImageUploadProps) => {
             </p>
           </div>
           <div className="text-xs text-muted-foreground">
-            Supported formats: JPEG, PNG, WebP
+            You can also paste an image from clipboard
           </div>
         </div>
       </div>

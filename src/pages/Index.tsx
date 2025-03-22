@@ -2,25 +2,29 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import ImageUpload from "@/components/ImageUpload";
+import UrlInput from "@/components/UrlInput";
 import ResultDisplay from "@/components/ResultDisplay";
 import Footer from "@/components/Footer";
 import { UploadedImage, NestDetectionResult } from "@/types";
-import { detectNest } from "@/services/nestDetectionService";
+import { detectNestFromFile, detectNestFromUrl } from "@/services/nestDetectionService";
 import { toast } from "sonner";
 import { ChevronDown } from "lucide-react";
 
 const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
+  const [analysisImageUrl, setAnalysisImageUrl] = useState<string | null>(null);
   const [result, setResult] = useState<NestDetectionResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const handleImageUpload = async (image: UploadedImage) => {
     setUploadedImage(image);
+    setAnalysisImageUrl(null);
     setResult(null);
     setIsAnalyzing(true);
     
     try {
-      const detectionResult = await detectNest(image.file);
+      toast.info("Uploading and analyzing image...");
+      const detectionResult = await detectNestFromFile(image.file);
       setResult(detectionResult);
       
       toast.success(
@@ -36,6 +40,35 @@ const Index = () => {
     }
   };
 
+  const handleUrlSubmit = async (url: string) => {
+    // Clean up previous upload if exists
+    if (uploadedImage?.preview) {
+      URL.revokeObjectURL(uploadedImage.preview);
+    }
+    
+    setUploadedImage(null);
+    setAnalysisImageUrl(url);
+    setResult(null);
+    setIsAnalyzing(true);
+    
+    try {
+      toast.info("Analyzing image from URL...");
+      const detectionResult = await detectNestFromUrl(url);
+      setResult(detectionResult);
+      
+      toast.success(
+        detectionResult.found
+          ? "Bird nest detected successfully!"
+          : "Analysis complete. No bird nest found."
+      );
+    } catch (error) {
+      console.error("Error processing image URL:", error);
+      toast.error("Failed to analyze image. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const handleReset = () => {
     // Release object URL to prevent memory leaks
     if (uploadedImage?.preview) {
@@ -43,8 +76,12 @@ const Index = () => {
     }
     
     setUploadedImage(null);
+    setAnalysisImageUrl(null);
     setResult(null);
   };
+
+  // Main display image URL (either from file upload preview or direct URL analysis)
+  const displayImageUrl = uploadedImage?.preview || analysisImageUrl;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -61,7 +98,7 @@ const Index = () => {
               Bird Nest <span className="text-primary">Detection</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8 animate-slide-up" style={{ animationDelay: "100ms" }}>
-              Upload an image and our AI will instantly detect if there's a bird nest
+              Upload an image or provide a URL and our AI will instantly detect if there's a bird nest
               present and pinpoint its exact location with precision.
             </p>
             
@@ -88,10 +125,10 @@ const Index = () => {
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-10">
               <h2 className="text-2xl md:text-3xl font-display font-semibold mb-3">
-                Upload an Image
+                Analyze an Image
               </h2>
               <p className="text-muted-foreground">
-                Drag and drop or browse to upload your image for analysis
+                Upload an image, paste a URL, or drag and drop to detect bird nests
               </p>
             </div>
             
@@ -100,9 +137,14 @@ const Index = () => {
               isLoading={isAnalyzing} 
             />
             
+            <UrlInput
+              onUrlSubmit={handleUrlSubmit}
+              isLoading={isAnalyzing}
+            />
+            
             <ResultDisplay 
               result={result} 
-              imageUrl={uploadedImage?.preview || null} 
+              imageUrl={displayImageUrl || null} 
               isLoading={isAnalyzing}
               onReset={handleReset}
             />
@@ -125,8 +167,8 @@ const Index = () => {
               {[
                 {
                   step: "1",
-                  title: "Upload",
-                  description: "Upload any image containing potential bird nests for analysis."
+                  title: "Upload or Paste URL",
+                  description: "Upload any image or provide a URL containing potential bird nests for analysis."
                 },
                 {
                   step: "2",

@@ -22,3 +22,13 @@ export interface UploadedImage {
   preview: string;
   file: File;
 }
+
+export interface ImageHostingResponse {
+  data: {
+    url: string;
+    display_url: string;
+    delete_url: string;
+  };
+  success: boolean;
+  status: number;
+}
