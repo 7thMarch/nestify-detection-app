@@ -50,6 +50,22 @@ export const detectNestFromFile = async (imageFile: File): Promise<NestDetection
   }
 };
 
+// Helper function to extract JSON from possible markdown response
+const extractJsonFromResponse = (content: string): string => {
+  // Check if the content is wrapped in markdown code blocks
+  const jsonRegex = /```(?:json)?\s*([\s\S]*?)\s*```/;
+  const match = content.match(jsonRegex);
+  
+  // If we found a markdown code block, extract the JSON from it
+  if (match && match[1]) {
+    console.log("Extracted JSON from markdown:", match[1]);
+    return match[1].trim();
+  }
+  
+  // Otherwise return the original content
+  return content;
+};
+
 // Detect nest directly from a URL
 export const detectNestFromUrl = async (imageUrl: string): Promise<NestDetectionResult> => {
   try {
@@ -65,7 +81,7 @@ export const detectNestFromUrl = async (imageUrl: string): Promise<NestDetection
         messages: [
           {
             role: 'system',
-            content: 'You are a bird nest detection system. Only respond in valid JSON format. If you detect a bird nest in the image, respond with {"found": true, "position": {"x1": int, "y1": int, "x2": int, "y2": int}} where the position represents the approximate bounding box coordinates of the nest in pixels (top-left x,y to bottom-right x,y). If no bird nest is detected, respond with {"found": false, "description": "detailed description of what is actually in the image"}. Do not include any explanations or additional text outside of the JSON response.'
+            content: 'You are a bird nest detection system. Only respond in valid JSON format. If you detect a bird nest in the image, respond with {"found": true, "position": {"x1": int, "y1": int, "x2": int, "y2": int}} where the position represents the approximate bounding box coordinates of the nest in pixels (top-left x,y to bottom-right x,y). If no bird nest is detected, respond with {"found": false, "description": "detailed description of what is actually in the image"}. Do not include any explanations or additional text outside of the JSON response. DO NOT wrap your response in markdown code blocks or any formatting.'
           },
           {
             role: 'user',
@@ -89,7 +105,10 @@ export const detectNestFromUrl = async (imageUrl: string): Promise<NestDetection
     // Parse the JSON response from the AI
     const content = response.data.choices[0]?.message?.content || '';
     console.log("AI response:", content);
-    const result = JSON.parse(content) as NestDetectionResult;
+    
+    // Extract JSON from possible markdown formatting
+    const cleanJson = extractJsonFromResponse(content);
+    const result = JSON.parse(cleanJson) as NestDetectionResult;
     
     return result;
   } catch (error) {
