@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef, DragEvent } from "react";
+import { useState, useCallback, useRef, DragEvent, useEffect } from "react";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UploadedImage } from "@/types";
